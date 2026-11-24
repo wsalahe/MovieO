@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:video_player/video_player.dart';
+import 'account.dart';
 
 const catalogUrl =
     'https://raw.githubusercontent.com/wsalahe/MovieO/main/catalog.json';
@@ -20,8 +21,34 @@ class MovieOApp extends StatelessWidget {
           scaffoldBackgroundColor: const Color(0xFF0B0B0F),
           colorScheme: const ColorScheme.dark(primary: Color(0xFFE50914)),
         ),
-        home: const HomePage(),
+        home: const Gate(),
       );
+}
+
+class Gate extends StatefulWidget {
+  const Gate({super.key});
+  @override
+  State<Gate> createState() => _GateState();
+}
+
+class _GateState extends State<Gate> {
+  bool? ok;
+  @override
+  void initState() {
+    super.initState();
+    Account.restore().then((v) => setState(() => ok = v));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (ok == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    if (!ok!) {
+      return AuthPage(onDone: () => setState(() => ok = true));
+    }
+    return HomePage(onSignedOut: () => setState(() => ok = false));
+  }
 }
 
 class Episode {
@@ -66,7 +93,8 @@ Future<List<Item>> loadCatalog() async {
 }
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final VoidCallback onSignedOut;
+  const HomePage({super.key, required this.onSignedOut});
   @override
   State<HomePage> createState() => _HomePageState();
 }
@@ -102,7 +130,14 @@ class _HomePageState extends State<HomePage> {
         actions: [
           IconButton(
               icon: const Icon(Icons.refresh),
-              onPressed: () => setState(() => _f = loadCatalog()))
+              onPressed: () => setState(() => _f = loadCatalog())),
+          IconButton(
+              icon: const Icon(Icons.account_circle),
+              onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) =>
+                          SettingsPage(onSignedOut: widget.onSignedOut)))),
         ],
       ),
       body: FutureBuilder<List<Item>>(
@@ -261,7 +296,9 @@ class _PlayerPageState extends State<PlayerPage> {
       await v.initialize();
       _v = v;
       _c = ChewieController(
-          videoPlayerController: v, autoPlay: true, allowFullScreen: false);
+          videoPlayerController: v,
+          autoPlay: Account.profile['autoplay'] != false,
+          allowFullScreen: false);
       if (mounted) setState(() {});
     } catch (e) {
       if (mounted) setState(() => _err = 'Could not play this video');
