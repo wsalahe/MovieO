@@ -1,0 +1,14 @@
+name: movieo
+description: MovieO - watch movies and series.
+publish_to: none
+version: 1.0.0+1
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.2.0
+  video_player: ^2.8.0
+  chewie: ^1.7.5
+flutter:
+  uses-material-design: true
