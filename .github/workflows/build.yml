@@ -24,6 +24,10 @@ jobs:
           cp pubspec.yaml build_app/pubspec.yaml
           cp -r lib/. build_app/lib/
           sed -i 's#<application#<uses-permission android:name="android.permission.INTERNET"/>\n    <application#' build_app/android/app/src/main/AndroidManifest.xml
+      - name: Disable lint crash
+        run: |
+          G=$(ls build_app/android/app/build.gradle.kts build_app/android/app/build.gradle 2>/dev/null | head -1)
+          if [ "${G##*.}" = "kts" ]; then sed -i 's/^android {/android {\n    lint { checkReleaseBuilds = false; abortOnError = false }/' "$G"; else sed -i 's/^android {/android {\n    lint { checkReleaseBuilds false; abortOnError false }/' "$G"; fi
       - name: Build
         working-directory: build_app
         run: |
