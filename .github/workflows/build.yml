@@ -22,7 +22,7 @@ jobs:
         run: |
           flutter create --platforms=android --org com.waleed --project-name movieo build_app
           cp pubspec.yaml build_app/pubspec.yaml
-          cp lib/main.dart build_app/lib/main.dart
+          cp -r lib/. build_app/lib/
           sed -i 's#<application#<uses-permission android:name="android.permission.INTERNET"/>\n    <application#' build_app/android/app/src/main/AndroidManifest.xml
       - name: Build
         working-directory: build_app
